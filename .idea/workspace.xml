@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="31e18145-9f13-473d-a86f-940a917e2d26" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/AccessRightsTooLowException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/ConstraintViolationException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/DataAccessException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/DataUpdateException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/InvalidDataException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/InvalidLoginDataException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/NoDataException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/NotFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/CardController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/ContentType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/Controller.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/HttpStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/Main.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/PackageController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/Response.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/Router.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/UserController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/model/BattleLogs.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/model/Card.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/model/TradingDeal.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/model/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/model/UserCredentials.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/model/UserData.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/model/UserStats.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/CardRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/PackageRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/SessionRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/requests/ServerRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/server/ClientThread.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/server/Database.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/server/DatabaseManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/server/RouterManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/server/Server.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="true" />
+      </MavenGeneralSettings>
+    </option>
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="workspaceImportEnabled" value="true" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="2ZzvDMbTl4eS78ecbScoxREZiVm" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/tonit/Downloads/Monsters_Trading_Card_Game_Final"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="monsterserver.exceptions" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="31e18145-9f13-473d-a86f-940a917e2d26" name="Changes" comment="" />
+      <created>1703437605299</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1703437605299</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/monsterserver/server/ClientThread.java</url>
+          <line>39</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
