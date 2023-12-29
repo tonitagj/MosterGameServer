@@ -34,10 +34,8 @@ public class UserController implements Controller {
         Response response = null;
         if(serverRequest.getMethod().equals("POST")){
             //user
-            if(serverRequest.getPathParts().get(0).equals("users")){
-                if(serverRequest.getPathParts().get(1).isEmpty()){
+            if(serverRequest.getPathParts().get(0).equals("users")) {
                     return this.addUser(serverRequest);
-                }
                 //session
             } else if(serverRequest.getPathParts().get(0).equals("sessions")){
                 return this.loginUser(serverRequest);

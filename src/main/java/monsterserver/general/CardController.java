@@ -45,8 +45,8 @@ public class CardController implements Controller{
 
         try (databaseManager) {
             new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
-            int user_id = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
-            Collection<Card> userCards = new CardRepository(databaseManager).getAllCardsFromUser(user_id);
+            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
+            Collection<Card> userCards = new CardRepository(databaseManager).getAllCardsFromUser(userId);
 
             databaseManager.commitTransaction();
 

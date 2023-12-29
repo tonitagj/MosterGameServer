@@ -60,7 +60,7 @@ public class CardRepository {
         }
     }
 
-    public Collection<Card> getAllDeckCardsFromUser(Integer user_id)
+    public Collection<Card> getAllDeckCardsFromUser(Integer userId)
     {
         try (PreparedStatement preparedStatement =
                      this.databaseManager.prepareStatement("""
@@ -69,7 +69,7 @@ public class CardRepository {
                        Order BY card_id DESC;
                 """))
         {
-            preparedStatement.setInt(1, user_id);
+            preparedStatement.setInt(1, userId);
             ResultSet resultSet = preparedStatement.executeQuery();
             Collection<Card> userCards = new ArrayList<>();
 
@@ -94,7 +94,7 @@ public class CardRepository {
     }
 
 
-    public void updateCardOwner(Integer user_id, String card_id)
+    public void updateCardOwner(Integer userId, String cardId)
     {
         try (PreparedStatement preparedStatement =
                      this.databaseManager.prepareStatement("""
@@ -103,8 +103,8 @@ public class CardRepository {
                     WHERE card_id = ?
                 """))
         {
-            preparedStatement.setInt(1, (user_id));
-            preparedStatement.setString(2, (card_id));
+            preparedStatement.setInt(1, (userId));
+            preparedStatement.setString(2, (cardId));
             Integer updatedRows = preparedStatement.executeUpdate();
 
             if(updatedRows < 1)
@@ -117,7 +117,7 @@ public class CardRepository {
         }
     }
 
-    public Card getCardByCardId(String card_id) {
+    public Card getCardByCardId(String cardId) {
         try (PreparedStatement preparedStatement =
                      this.databaseManager.prepareStatement("""
                              SELECT Cards.card_id, Cards.card_name, Cards.damage
@@ -126,11 +126,11 @@ public class CardRepository {
                                 AND deck_id IS NULL
                                 AND trading_id IS NULL;
                                       """)) {
-            preparedStatement.setString(1, card_id);
+            preparedStatement.setString(1, cardId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (!resultSet.next()) {
-                throw new NotFoundException("No Card with Card-Id: " + card_id + " found");
+                throw new NotFoundException("No Card with Card-Id: " + cardId + " found");
             }
 
             Card card = new Card(

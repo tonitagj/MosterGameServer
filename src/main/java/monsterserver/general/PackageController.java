@@ -7,6 +7,7 @@ import monsterserver.exceptions.*;
 import monsterserver.model.Card;
 import monsterserver.repositories.PackageRepository;
 import monsterserver.repositories.SessionRepository;
+import monsterserver.repositories.TransactionPackageRepository;
 import monsterserver.requests.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
@@ -22,14 +23,13 @@ public class PackageController implements Controller{
     public void printline(){
 
     }
-
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if(serverRequest.getMethod().equals("GET")) {
-            if (serverRequest.getPathParts().get(0).equals("cards")) {
-                //return this.getCardsFromUser(serverRequest);
-            }
+        if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("transactions") && serverRequest.getPathParts().get(1).equals("packages")){
+            return this.acquireCardPackage(serverRequest);
+        }else if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("packages")) {
+            return this.createPackage(serverRequest);
         }
         return response;
 
@@ -100,6 +100,92 @@ public class PackageController implements Controller{
                     HttpStatus.BAD_REQUEST,
                     ContentType.PLAIN_TEXT,
                     "The provided package did not include the required amount of cards"
+            );
+        }
+        catch (DataAccessException e)
+        {
+            databaseManager.rollbackTransaction();
+            e.printStackTrace();
+            return new Response(
+                    HttpStatus.CONFLICT,
+                    ContentType.PLAIN_TEXT,
+                    "Database Server Error"
+            );
+        }
+        catch (Exception e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "Internal Server Error"
+            );
+        }
+    }
+
+    public Response acquireCardPackage(ServerRequest serverRequest) {
+        DatabaseManager databaseManager = new DatabaseManager();
+
+        try (databaseManager) {
+            new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
+
+            int packageId = new TransactionPackageRepository(databaseManager).choosePackage();
+            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
+
+            //acquire packages
+            new TransactionPackageRepository(databaseManager).acquireCardPackage(packageId, userId);
+            //new TransactionPackageRepository(databaseManager).updateCoinsByUserId(userId);
+
+            databaseManager.commitTransaction();
+
+            return  new Response(
+                    HttpStatus.OK,
+                    ContentType.PLAIN_TEXT,
+                    "A package has been successfully bought"
+            );
+        }
+        catch (JsonProcessingException exception) {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.PLAIN_TEXT,
+                    "Internal Server Error"
+            );
+        }
+        catch (InvalidLoginDataException e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.UNAUTHORIZED,
+                    ContentType.PLAIN_TEXT,
+                    "Authentication information is missing or invalid"
+            );
+        }
+        catch (NoDataException e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.PLAIN_TEXT,
+                    "No card package available for buying"
+            );
+        }
+        catch (DataUpdateException e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.CONFLICT,
+                    ContentType.PLAIN_TEXT,
+                    "Update data was not successfully"
+            );
+        }
+        catch (InvalidItemException e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.FORBIDDEN,
+                    ContentType.PLAIN_TEXT,
+                    "Not enough money for buying a card package"
             );
         }
         catch (DataAccessException e)
