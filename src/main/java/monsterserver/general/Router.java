@@ -14,6 +14,14 @@ public class Router {
 
     public Controller resolve(String route)
     {
-        return this.controllerRegistry.get(route);
+        return this.controllerRegistry.get(cleanRoute(route));
+    }
+
+    private String cleanRoute(String route){
+        if(route.contains("?")){
+            route = route.substring(0, route.indexOf("?"));
+        }
+
+        return route;
     }
 }

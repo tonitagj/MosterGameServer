@@ -4,16 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.*;
-import monsterserver.model.Card;
-import monsterserver.repositories.PackageRepository;
+import monsterserver.model.TradingDeal;
 import monsterserver.repositories.SessionRepository;
-import monsterserver.repositories.TransactionPackageRepository;
+import monsterserver.repositories.TradingRepository;
 import monsterserver.requests.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
-public class PackageController implements Controller{
+import java.util.Collection;
+
+public class TradingController implements Controller{
     ObjectMapper objectMapper;
-    public PackageController(){
+    public TradingController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     public ObjectMapper getObjectMapper() {
@@ -23,38 +24,37 @@ public class PackageController implements Controller{
     public void printline(){
 
     }
+
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("transactions") && serverRequest.getPathParts().get(1).equals("packages")){
-            return this.acquireCardPackage(serverRequest);
-        }else if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("packages")) {
-            return this.createPackage(serverRequest);
+        if(serverRequest.getMethod().equals("POST")) {
+            if (serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("tradings")) {
+                return this.createTradingDeal(serverRequest);
+            } else if (serverRequest.getMethod().equals("GET") && serverRequest.getPathParts().get(0).equals("tradings")) {
+                return this.getTradingDeals(serverRequest);
+            }
         }
         return response;
-
     }
 
-    public Response createPackage(ServerRequest serverRequest) {
+    public Response createTradingDeal(ServerRequest serverRequest) {
         DatabaseManager databaseManager = new DatabaseManager();
 
         try (databaseManager) {
-            new SessionRepository(databaseManager).checkIfTokenIsAdmin(serverRequest);
 
-            Card cards[] = this.getObjectMapper().readValue(serverRequest.getBody(), Card[].class);
-            if(cards.length != 5)
-            {
-                throw new InvalidDataException("The provided package did not include the required amount of cards");
-            }
+            new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
+            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
+            TradingDeal tradingDeal = this.getObjectMapper().readValue(serverRequest.getBody(), TradingDeal.class);
 
-            new PackageRepository(databaseManager).createPackage(cards);
-
+            new TradingRepository(databaseManager).createTradingDeal(tradingDeal);
+            new TradingRepository(databaseManager).updateCardForCreateTradingDeal(tradingDeal, userId);
             databaseManager.commitTransaction();
 
             return  new Response(
                     HttpStatus.CREATED,
                     ContentType.PLAIN_TEXT,
-                    "Package and cards successfully created"
+                    "Trading deal successfully created"
             );
         }
         catch (JsonProcessingException exception) {
@@ -77,29 +77,21 @@ public class PackageController implements Controller{
         catch (ConstraintViolationException e)
         {
             databaseManager.rollbackTransaction();
+            e.printStackTrace();
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
-                    "At least one card in the packages already exists"
+                    "A deal with this deal ID already exists."
             );
         }
-        catch (AccessRightsTooLowException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.FORBIDDEN,
-                    ContentType.PLAIN_TEXT,
-                    "Provided user is not \"admin\""
-            );
-        }
-        catch (InvalidDataException e)
+        catch (InvalidItemException e)
         {
             databaseManager.rollbackTransaction();
             e.printStackTrace();
             return new Response(
-                    HttpStatus.BAD_REQUEST,
+                    HttpStatus.FORBIDDEN,
                     ContentType.PLAIN_TEXT,
-                    "The provided package did not include the required amount of cards"
+                    "The deal contains a card that is not owned by the user or locked in the deck."
             );
         }
         catch (DataAccessException e)
@@ -123,25 +115,23 @@ public class PackageController implements Controller{
         }
     }
 
-    public Response acquireCardPackage(ServerRequest serverRequest) {
+    public Response getTradingDeals(ServerRequest serverRequest) {
         DatabaseManager databaseManager = new DatabaseManager();
 
         try (databaseManager) {
+
             new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
-
-            int packageId = new TransactionPackageRepository(databaseManager).choosePackage();
             int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
-
-            //acquire packages
-            new TransactionPackageRepository(databaseManager).acquireCardPackage(packageId, userId);
-            new TransactionPackageRepository(databaseManager).updateCoinsByUserId(userId);
+            Collection<TradingDeal> tradingDeals = new TradingRepository(databaseManager).getAllTradingDeals();
 
             databaseManager.commitTransaction();
 
+            String tradingDealsJSON = this.getObjectMapper().writeValueAsString(tradingDeals);
+
             return  new Response(
                     HttpStatus.OK,
-                    ContentType.PLAIN_TEXT,
-                    "A package has been successfully bought"
+                    ContentType.JSON,
+                    tradingDealsJSON
             );
         }
         catch (JsonProcessingException exception) {
@@ -164,28 +154,12 @@ public class PackageController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
+            e.printStackTrace();
             return new Response(
-                    HttpStatus.NOT_FOUND,
+                    //Mit Status 204 wird die Nachricht nicht angezeigt
+                    HttpStatus.BAD_REQUEST,
                     ContentType.PLAIN_TEXT,
-                    "No card package available for buying"
-            );
-        }
-        catch (DataUpdateException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.CONFLICT,
-                    ContentType.PLAIN_TEXT,
-                    "Update data was not successfully"
-            );
-        }
-        catch (InvalidItemException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.FORBIDDEN,
-                    ContentType.PLAIN_TEXT,
-                    "Not enough money for buying a card package"
+                    "The request was fine, but there are no trading deals available"
             );
         }
         catch (DataAccessException e)
@@ -208,6 +182,4 @@ public class PackageController implements Controller{
             );
         }
     }
-
-
 }

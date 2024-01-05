@@ -1,9 +1,6 @@
 package monsterserver.server;
 
-import monsterserver.general.CardController;
-import monsterserver.general.PackageController;
-import monsterserver.general.Router;
-import monsterserver.general.UserController;
+import monsterserver.general.*;
 
 public class RouterManager {
 
@@ -13,7 +10,12 @@ public class RouterManager {
         router.addController("packages", new PackageController());
         router.addController("transactions", new PackageController());
         router.addController("cards", new CardController());
-
+        router.addController("deck", new DeckController());
+        router.addController("tradings", new TradingController());
+        router.addController("battles", new BattlesController());
+        router.addController("stats", new StatsController());
+        router.addController("battlelogs", new BattleLogsController());
+        router.addController("scoreboard", new ScoreboardController());
         return router;
     }
 }

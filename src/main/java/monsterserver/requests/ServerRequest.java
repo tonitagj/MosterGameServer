@@ -19,6 +19,7 @@ public class ServerRequest {
     private List<String> pathParts;
     public static final String AUTHORIZATION_TOKEN_HEADER = "Authorization";
     public static final String CONTENT_LENGTH_HEADER = "Content-Length";
+    public static final String CONTENT_TYPE_HEADER = "Content-Type";
 
     public static final String HEADER_NAME_VALUE_SEPARATOR = ":";
     private Map<String, String> headers = new HashMap<>();
@@ -30,6 +31,12 @@ public class ServerRequest {
             return 0;
         }
         return Integer.parseInt(header);
+    }
+
+    public String getContentType(){
+        final String header=headers.get(CONTENT_TYPE_HEADER);
+        return header;
+
     }
 
     public ServerRequest(){

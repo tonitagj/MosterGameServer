@@ -80,7 +80,7 @@ public class SessionRepository {
             }
 
             preparedStatement.setString(1, username);
-            preparedStatement.setString(2, serverRequest.getAuthorizationTokenHeader().substring(6));
+            preparedStatement.setString(2, serverRequest.getAuthorizationTokenHeader().substring(7));
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next() == false)
@@ -105,7 +105,7 @@ public class SessionRepository {
                 throw new InvalidLoginDataException("Invalid username/password provided");
             }
 
-            preparedStatement.setString(1, serverRequest.getAuthorizationTokenHeader().substring(6));
+            preparedStatement.setString(1, serverRequest.getAuthorizationTokenHeader().substring(7));
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(!resultSet.next())
@@ -130,10 +130,10 @@ public class SessionRepository {
                 throw new InvalidLoginDataException("Invalid username/password provided");
             }
 
-            preparedStatement.setString(1, serverRequest.getAuthorizationTokenHeader().substring(6));
+            preparedStatement.setString(1, serverRequest.getAuthorizationTokenHeader().substring(7));
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if(!(serverRequest.getAuthorizationTokenHeader().substring(6).startsWith("admin")))
+            if(!(serverRequest.getAuthorizationTokenHeader().substring(7).startsWith("admin")))
             {
                 throw new AccessRightsTooLowException("Provided user is not \"admin\"");
             }
@@ -159,7 +159,7 @@ public class SessionRepository {
                 throw new InvalidLoginDataException("Invalid username/password provided");
             }
 
-            preparedStatement.setString(1, serverRequest.getAuthorizationTokenHeader().substring(6));
+            preparedStatement.setString(1, serverRequest.getAuthorizationTokenHeader().substring(7));
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next() == false)

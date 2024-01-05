@@ -25,7 +25,7 @@ public class CardRepository {
     }
 
 
-    public Collection<Card> getAllCardsFromUser(Integer user_id)
+    public Collection<Card> getAllCardsFromUser(Integer userId)
     {
         try (PreparedStatement preparedStatement =
                      this.databaseManager.prepareStatement("""
@@ -34,7 +34,7 @@ public class CardRepository {
                        Order BY card_id DESC;
                 """))
         {
-            preparedStatement.setInt(1, user_id);
+            preparedStatement.setInt(1, userId);
             ResultSet resultSet = preparedStatement.executeQuery();
             Collection<Card> userCards = new ArrayList<>();
 

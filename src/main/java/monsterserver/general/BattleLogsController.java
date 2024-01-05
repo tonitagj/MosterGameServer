@@ -3,17 +3,23 @@ package monsterserver.general;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import monsterserver.exceptions.*;
-import monsterserver.model.Card;
-import monsterserver.repositories.PackageRepository;
+import monsterserver.exceptions.DataAccessException;
+import monsterserver.exceptions.InvalidLoginDataException;
+import monsterserver.exceptions.NoDataException;
+import monsterserver.exceptions.NotFoundException;
+import monsterserver.model.BattleLogs;
+import monsterserver.repositories.BattleLogsRepository;
 import monsterserver.repositories.SessionRepository;
-import monsterserver.repositories.TransactionPackageRepository;
+import monsterserver.repositories.UserRepository;
 import monsterserver.requests.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
-public class PackageController implements Controller{
+import java.util.List;
+
+public class BattleLogsController implements Controller {
+
     ObjectMapper objectMapper;
-    public PackageController(){
+    public BattleLogsController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     public ObjectMapper getObjectMapper() {
@@ -23,125 +29,44 @@ public class PackageController implements Controller{
     public void printline(){
 
     }
+
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("transactions") && serverRequest.getPathParts().get(1).equals("packages")){
-            return this.acquireCardPackage(serverRequest);
-        }else if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("packages")) {
-            return this.createPackage(serverRequest);
+        if (serverRequest.getMethod().equals("GET") && serverRequest.getPathParts().size() > 1) {
+            return this.getDetailedBattleLog(serverRequest);
+        }else if (serverRequest.getMethod().equals("GET")){
+
+            return this.getBattleLogsFromUser(serverRequest);
         }
+
         return response;
 
     }
 
-    public Response createPackage(ServerRequest serverRequest) {
+    public Response getBattleLogsFromUser(ServerRequest serverRequest) {
         DatabaseManager databaseManager = new DatabaseManager();
 
         try (databaseManager) {
-            new SessionRepository(databaseManager).checkIfTokenIsAdmin(serverRequest);
 
-            Card cards[] = this.getObjectMapper().readValue(serverRequest.getBody(), Card[].class);
-            if(cards.length != 5)
+            new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
+            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
+            List<BattleLogs> battleLogs = new BattleLogsRepository(databaseManager).getBattleLogs(userId);
+
+            for(BattleLogs battleLog : battleLogs)
             {
-                throw new InvalidDataException("The provided package did not include the required amount of cards");
+                battleLog.setFirstPlayer(new UserRepository(databaseManager).getUsernameByUserId(battleLog.getPlayerAId()));
+                battleLog.setSecondPlayer(new UserRepository(databaseManager).getUsernameByUserId(battleLog.getPlayerBId()));
             }
 
-            new PackageRepository(databaseManager).createPackage(cards);
-
             databaseManager.commitTransaction();
 
-            return  new Response(
-                    HttpStatus.CREATED,
-                    ContentType.PLAIN_TEXT,
-                    "Package and cards successfully created"
-            );
-        }
-        catch (JsonProcessingException exception) {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.PLAIN_TEXT,
-                    "Internal Server Error"
-            );
-        }
-        catch (InvalidLoginDataException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.UNAUTHORIZED,
-                    ContentType.PLAIN_TEXT,
-                    "Authentication information is missing or invalid"
-            );
-        }
-        catch (ConstraintViolationException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.CONFLICT,
-                    ContentType.PLAIN_TEXT,
-                    "At least one card in the packages already exists"
-            );
-        }
-        catch (AccessRightsTooLowException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.FORBIDDEN,
-                    ContentType.PLAIN_TEXT,
-                    "Provided user is not \"admin\""
-            );
-        }
-        catch (InvalidDataException e)
-        {
-            databaseManager.rollbackTransaction();
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.BAD_REQUEST,
-                    ContentType.PLAIN_TEXT,
-                    "The provided package did not include the required amount of cards"
-            );
-        }
-        catch (DataAccessException e)
-        {
-            databaseManager.rollbackTransaction();
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.CONFLICT,
-                    ContentType.PLAIN_TEXT,
-                    "Database Server Error"
-            );
-        }
-        catch (Exception e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "Internal Server Error"
-            );
-        }
-    }
-
-    public Response acquireCardPackage(ServerRequest serverRequest) {
-        DatabaseManager databaseManager = new DatabaseManager();
-
-        try (databaseManager) {
-            new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
-
-            int packageId = new TransactionPackageRepository(databaseManager).choosePackage();
-            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
-
-            //acquire packages
-            new TransactionPackageRepository(databaseManager).acquireCardPackage(packageId, userId);
-            new TransactionPackageRepository(databaseManager).updateCoinsByUserId(userId);
-
-            databaseManager.commitTransaction();
+            String userCardsJSON = this.getObjectMapper().writeValueAsString(battleLogs);
 
             return  new Response(
                     HttpStatus.OK,
-                    ContentType.PLAIN_TEXT,
-                    "A package has been successfully bought"
+                    ContentType.JSON,
+                    userCardsJSON
             );
         }
         catch (JsonProcessingException exception) {
@@ -164,28 +89,11 @@ public class PackageController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
+            e.printStackTrace();
             return new Response(
                     HttpStatus.NOT_FOUND,
                     ContentType.PLAIN_TEXT,
-                    "No card package available for buying"
-            );
-        }
-        catch (DataUpdateException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.CONFLICT,
-                    ContentType.PLAIN_TEXT,
-                    "Update data was not successfully"
-            );
-        }
-        catch (InvalidItemException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.FORBIDDEN,
-                    ContentType.PLAIN_TEXT,
-                    "Not enough money for buying a card package"
+                    "No Battle logs for user found"
             );
         }
         catch (DataAccessException e)
@@ -209,5 +117,67 @@ public class PackageController implements Controller{
         }
     }
 
+    public Response getDetailedBattleLog(ServerRequest serverRequest) {
+        DatabaseManager databaseManager = new DatabaseManager();
 
+        try (databaseManager) {
+
+            new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
+
+            String battleLog = new BattleLogsRepository(databaseManager).getDetailedBattleLog(Integer.parseInt(serverRequest.getPathParts().get(1)));
+            databaseManager.commitTransaction();
+
+            return  new Response(
+                    HttpStatus.OK,
+                    ContentType.PLAIN_TEXT,
+                    battleLog
+            );
+        }
+        catch (JsonProcessingException exception) {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.PLAIN_TEXT,
+                    "Internal Server Error"
+            );
+        }
+        catch (InvalidLoginDataException e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.UNAUTHORIZED,
+                    ContentType.PLAIN_TEXT,
+                    "Authentication information is missing or invalid"
+            );
+        }
+        catch (NotFoundException e)
+        {
+            databaseManager.rollbackTransaction();
+            e.printStackTrace();
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.PLAIN_TEXT,
+                    "No Battle log found with specific battlelog-id"
+            );
+        }
+        catch (DataAccessException e)
+        {
+            databaseManager.rollbackTransaction();
+            e.printStackTrace();
+            return new Response(
+                    HttpStatus.CONFLICT,
+                    ContentType.PLAIN_TEXT,
+                    "Database Server Error"
+            );
+        }
+        catch (Exception e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "Internal Server Error"
+            );
+        }
+    }
 }

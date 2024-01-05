@@ -3,10 +3,7 @@ package monsterserver.general;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import monsterserver.exceptions.DataAccessException;
-import monsterserver.exceptions.DataUpdateException;
-import monsterserver.exceptions.InvalidLoginDataException;
-import monsterserver.exceptions.NoDataException;
+import monsterserver.exceptions.*;
 import monsterserver.model.UserCredentials;
 import monsterserver.model.UserData;
 import monsterserver.repositories.SessionRepository;
@@ -73,7 +70,15 @@ public class UserController implements Controller {
                     ContentType.PLAIN_TEXT,
                     "Internal Server Error"
             );
-        } catch (Exception e) {
+        } catch (ConstraintViolationException exception) {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.PLAIN_TEXT,
+                    "User already exists"
+            );
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

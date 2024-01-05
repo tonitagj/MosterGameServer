@@ -4,15 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="31e18145-9f13-473d-a86f-940a917e2d26" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/InvalidItemException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/TransactionPackageRepository.java" afterDir="false" />
+    <list default="true" id="31e18145-9f13-473d-a86f-940a917e2d26" name="Changes" comment="Packages and Cards were done. The admin can now create packages and the user can acquire them.">
+      <change afterPath="$PROJECT_DIR$/resetDatsbase" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/exceptions/NoPlayerFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/Battle.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/BattleLogsController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/BattlesController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/DeckController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/ScoreboardController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/StatsController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/TradingController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/BattleLogsRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/BattlesRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/DeckRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/ScoreboardRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/StatsRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/TradingRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/CurlTest.bat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/general/CardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/CardController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/general/PackageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/PackageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/general/Router.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/Router.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/general/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/general/UserController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/CardRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/CardRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/SessionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/repositories/SessionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/requests/ServerRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/requests/ServerRequest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/server/RouterManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/server/RouterManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/monsterserver/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/monsterserver/server/Server.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,17 +66,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Users/tonit/Downloads/Monsters_Trading_Card_Game_Final"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/tonit/Downloads/Monsters_Trading_Card_Game_Final&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="monsterserver.exceptions" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\tonit\Downloads\MosterGameServer\src\test" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Server" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="monsterserver.server.Server" />
+      <module name="MosterGameServer" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="monsterserver.server.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Server" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -77,7 +117,14 @@
       <option name="project" value="LOCAL" />
       <updated>1703722541478</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Packages and Cards were done. The admin can now create packages and the user can acquire them.">
+      <created>1703867259588</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1703867259588</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -93,17 +140,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Halfway through the project. Worked on some controllers and repositories. Server logic on how to parse headers is done." />
-    <option name="LAST_COMMIT_MESSAGE" value="Halfway through the project. Worked on some controllers and repositories. Server logic on how to parse headers is done." />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/monsterserver/server/ClientThread.java</url>
-          <line>39</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Packages and Cards were done. The admin can now create packages and the user can acquire them." />
+    <option name="LAST_COMMIT_MESSAGE" value="Packages and Cards were done. The admin can now create packages and the user can acquire them." />
   </component>
 </project>

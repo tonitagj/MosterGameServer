@@ -7,7 +7,7 @@ import java.net.Socket;
 public class Server {
     public static void main(String[] args) {
 
-        int serverPort = 1235;
+        int serverPort = 10001;
         ServerSocket serverSocket = null;
 
         try {
@@ -19,9 +19,6 @@ public class Server {
 
                 new Thread(clientThread).start();
 
-
-
-                //add controllers to router
 
             }
 
