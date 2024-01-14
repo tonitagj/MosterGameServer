@@ -1,17 +1,21 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.*;
+import monsterserver.httpFunc.ContentType;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.HttpStatus;
+import monsterserver.httpFunc.Response;
 import monsterserver.model.Card;
 import monsterserver.repositories.PackageRepository;
 import monsterserver.repositories.SessionRepository;
 import monsterserver.repositories.TransactionPackageRepository;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
-public class PackageController implements Controller{
+public class PackageController implements Controller {
     ObjectMapper objectMapper;
     public PackageController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -26,11 +30,13 @@ public class PackageController implements Controller{
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("transactions") && serverRequest.getPathParts().get(1).equals("packages")){
+        if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("transactions") && serverRequest.getPathParts().get(1).equals("packages") && serverRequest.getPathParts().size() == 2){
             return this.acquireCardPackage(serverRequest);
-        }else if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("packages")) {
+        }else if(serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("packages") && serverRequest.getPathParts().size() == 1) {
             return this.createPackage(serverRequest);
         }
+
+        response = new Response(HttpStatus.BAD_REQUEST, ContentType.PLAIN_TEXT, "Bad request!");
         return response;
 
     }
@@ -95,7 +101,7 @@ public class PackageController implements Controller{
         catch (InvalidDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.PLAIN_TEXT,
@@ -105,7 +111,7 @@ public class PackageController implements Controller{
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -191,7 +197,7 @@ public class PackageController implements Controller{
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,

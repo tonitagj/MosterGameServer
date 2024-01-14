@@ -1,9 +1,6 @@
 package monsterserver.repositories;
 
-import monsterserver.exceptions.ConstraintViolationException;
-import monsterserver.exceptions.DataAccessException;
-import monsterserver.exceptions.DataUpdateException;
-import monsterserver.exceptions.NoDataException;
+import monsterserver.exceptions.*;
 import monsterserver.model.User;
 import monsterserver.model.UserCredentials;
 import monsterserver.model.UserData;
@@ -147,6 +144,27 @@ public class UserRepository {
         }
     }
 
+    public Integer getUserIdByCardId(String cardId) {
+        try (PreparedStatement preparedStatement =
+                     this.databaseManager.prepareStatement("""
+                             SELECT * FROM Cards
+                                WHERE card_id = ?;
+                                      """)) {
+            preparedStatement.setString(1, cardId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (!resultSet.next()) {
+                throw new NotFoundException("No User with Card-Id: " + cardId + " found");
+            }
+
+            Integer user_id = resultSet.getInt("user_id");
+
+            return user_id;
+
+        } catch (SQLException e) {
+            throw new DataAccessException("Get User by Card-Id could not be executed", e);
+        }
+    }
 
 
 }

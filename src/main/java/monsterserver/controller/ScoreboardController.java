@@ -1,4 +1,4 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,17 +6,21 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.DataAccessException;
 import monsterserver.exceptions.InvalidLoginDataException;
 import monsterserver.exceptions.NoDataException;
-import monsterserver.model.Card;
-import monsterserver.repositories.CardRepository;
+import monsterserver.httpFunc.ContentType;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.HttpStatus;
+import monsterserver.httpFunc.Response;
+import monsterserver.model.UserStats;
+import monsterserver.repositories.ScoreboardRepository;
 import monsterserver.repositories.SessionRepository;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
 import java.util.Collection;
 
-public class CardController implements Controller{
+public class ScoreboardController implements Controller {
     ObjectMapper objectMapper;
-    public CardController(){
+    public ScoreboardController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     public ObjectMapper getObjectMapper() {
@@ -27,35 +31,33 @@ public class CardController implements Controller{
 
     }
 
-
-    @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if(serverRequest.getMethod().equals("GET")) {
-            if (serverRequest.getPathParts().get(0).equals("cards")) {
-                return this.getCardsFromUser(serverRequest);
-            }
+        if (serverRequest.getMethod().equals("GET") && serverRequest.getPathParts().get(0).equals("scoreboard") && serverRequest.getPathParts().size() == 1){
+            return this.getScoreboard(serverRequest);
+        } else{
+            response = new Response(HttpStatus.BAD_REQUEST, ContentType.PLAIN_TEXT, "Bad request!");
         }
-        return response;
 
+        return response;
     }
 
-    public Response getCardsFromUser(ServerRequest serverRequest) {
+    public Response getScoreboard(ServerRequest serverRequest) {
         DatabaseManager databaseManager = new DatabaseManager();
 
         try (databaseManager) {
+
             new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
-            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
-            Collection<Card> userCards = new CardRepository(databaseManager).getAllCardsFromUser(userId);
+            Collection<UserStats> scoreBoard = new ScoreboardRepository(databaseManager).getScoreboard();
 
             databaseManager.commitTransaction();
 
-            String userCardsJSON = this.getObjectMapper().writeValueAsString(userCards);
+            String scoreBoardJSON = this.getObjectMapper().writeValueAsString(scoreBoard);
 
             return  new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    userCardsJSON
+                    scoreBoardJSON
             );
         }
         catch (JsonProcessingException exception) {
@@ -78,17 +80,17 @@ public class CardController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.NO_CONTENT,
                     ContentType.PLAIN_TEXT,
-                    "The request was fine, but the user doesn't have any cards"
+                    "No entries for Scoreboard found"
             );
         }
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -105,5 +107,4 @@ public class CardController implements Controller{
             );
         }
     }
-
 }

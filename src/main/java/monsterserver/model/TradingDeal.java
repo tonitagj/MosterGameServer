@@ -7,8 +7,16 @@ public class TradingDeal {
     private String tradingId;
     @JsonAlias({"CardToTrade"})
     private String cardToTrade;
+    public String getCardType() {
+        return cardType;
+    }
+
+    public void setCardType(String randomText) {
+        this.cardType = randomText;
+    }
     @JsonAlias({"Type"})
     private String cardType;
+
     @JsonAlias({"MinimumDamage"})
     private Integer minimumDamage;
 
@@ -38,13 +46,13 @@ public class TradingDeal {
         this.cardToTrade = cardToTrade;
     }
 
-    public String getCardType() {
-        return cardType;
-    }
-
-    public void setCardType(String card_type) {
-        this.cardType = cardType;
-    }
+//    public String getCardType() {
+//        return cardType;
+//    }
+//
+//    public void setCardType(String card_type) {
+//        this.cardType = cardType;
+//    }
 
     public Integer getMinimumDamage() {
         return minimumDamage;

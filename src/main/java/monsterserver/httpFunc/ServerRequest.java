@@ -1,4 +1,4 @@
-package monsterserver.requests;
+package monsterserver.httpFunc;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,11 +33,18 @@ public class ServerRequest {
         return Integer.parseInt(header);
     }
 
+    public String getHeader(String headerName) {
+        return headers.get(headerName);
+    }
+    public void setContentLength(String content) { headers.put(CONTENT_LENGTH_HEADER, content); }
+
+
     public String getContentType(){
         final String header=headers.get(CONTENT_TYPE_HEADER);
         return header;
 
     }
+    public void setContentType(String content) { headers.put(CONTENT_TYPE_HEADER, content); }
 
     public ServerRequest(){
 

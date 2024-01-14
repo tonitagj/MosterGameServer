@@ -1,4 +1,4 @@
-package monsterserver.general;
+package monsterserver.httpFunc;
 
 public enum HttpStatus {
     OK(200, "OK"),

@@ -1,10 +1,9 @@
 package monsterserver.server;
 
-import monsterserver.general.Controller;
-import monsterserver.general.Response;
-import monsterserver.general.Router;
-import monsterserver.general.UserController;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.Response;
+import monsterserver.httpFunc.Router;
+import monsterserver.httpFunc.ServerRequest;
 
 import java.io.*;
 import java.net.Socket;

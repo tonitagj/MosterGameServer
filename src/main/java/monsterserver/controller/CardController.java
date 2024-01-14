@@ -1,4 +1,4 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,15 +6,21 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.DataAccessException;
 import monsterserver.exceptions.InvalidLoginDataException;
 import monsterserver.exceptions.NoDataException;
-import monsterserver.model.UserStats;
+import monsterserver.httpFunc.ContentType;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.HttpStatus;
+import monsterserver.httpFunc.Response;
+import monsterserver.model.Card;
+import monsterserver.repositories.CardRepository;
 import monsterserver.repositories.SessionRepository;
-import monsterserver.repositories.StatsRepository;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
-public class StatsController implements Controller{
+import java.util.Collection;
+
+public class CardController implements Controller {
     ObjectMapper objectMapper;
-    public StatsController(){
+    public CardController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     public ObjectMapper getObjectMapper() {
@@ -24,34 +30,37 @@ public class StatsController implements Controller{
     public void printline(){
 
     }
+
+
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if (serverRequest.getMethod().equals("GET")) {
-            return this.getStatsByUserId(serverRequest);
+        if(serverRequest.getMethod().equals("GET")) {
+            if (serverRequest.getPathParts().get(0).equals("cards") && serverRequest.getPathParts().size() == 1) {
+                return this.getCardsFromUser(serverRequest);
+            }
         }
-
+        response = new Response(HttpStatus.BAD_REQUEST, ContentType.PLAIN_TEXT, "Bad request!");
         return response;
+
     }
 
-
-    public Response getStatsByUserId(ServerRequest serverRequest) {
+    public Response getCardsFromUser(ServerRequest serverRequest) {
         DatabaseManager databaseManager = new DatabaseManager();
 
         try (databaseManager) {
-
             new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
             int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
-            UserStats userStats = new StatsRepository(databaseManager).getStatsByUserId(userId);
+            Collection<Card> userCards = new CardRepository(databaseManager).getAllCardsFromUser(userId);
 
             databaseManager.commitTransaction();
 
-            String userStatsJSON = this.getObjectMapper().writeValueAsString(userStats);
+            String userCardsJSON = this.getObjectMapper().writeValueAsString(userCards);
 
             return  new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    userStatsJSON
+                    userCardsJSON
             );
         }
         catch (JsonProcessingException exception) {
@@ -74,17 +83,17 @@ public class StatsController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.NO_CONTENT,
                     ContentType.PLAIN_TEXT,
-                    "Stats not found"
+                    "The request was fine, but the user doesn't have any cards"
             );
         }
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,

@@ -1,19 +1,23 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.*;
+import monsterserver.httpFunc.ContentType;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.HttpStatus;
+import monsterserver.httpFunc.Response;
 import monsterserver.model.Card;
 import monsterserver.repositories.CardRepository;
 import monsterserver.repositories.DeckRepository;
 import monsterserver.repositories.SessionRepository;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
 import java.util.Collection;
 
-public class DeckController implements Controller{
+public class DeckController implements Controller {
     ObjectMapper objectMapper;
     public DeckController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -29,10 +33,10 @@ public class DeckController implements Controller{
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if (serverRequest.getMethod().equals("PUT") && serverRequest.getPathParts().get(0).equals("deck")) {
+        if (serverRequest.getMethod().equals("PUT") && serverRequest.getPathParts().get(0).equals("deck") && serverRequest.getPathParts().size() == 1) {
             return this.configureDeckCardsFromUser(serverRequest);
         }else if (serverRequest.getMethod().equals("GET")){
-            if(serverRequest.getPathParts().get(0).equals("deck")){
+            if(serverRequest.getPathParts().get(0).equals("deck") && serverRequest.getPathParts().size() == 1){
                 return this.getDeckCardsFromUserJSON(serverRequest);
             }else if(serverRequest.getPathParts().get(0).substring(0, serverRequest.getPathParts().get(0).indexOf("?")).equals("deck") && serverRequest.getPathParts().get(0).substring(serverRequest.getPathParts().get(0).indexOf("?")+1).equals("format=plain") ){
                 return this.getDeckCardsFromUserPLAIN(serverRequest);
@@ -40,6 +44,8 @@ public class DeckController implements Controller{
                 return this.getDeckCardsFromUserJSON(serverRequest);
             }
         }
+
+        response = new Response(HttpStatus.BAD_REQUEST, ContentType.PLAIN_TEXT, "Bad request!");
         return response;
 
     }
@@ -98,7 +104,7 @@ public class DeckController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             //Hint: Optionally can show empty deck to match Curl Script!!! Change Content to empty reply!
             return new Response(
                     HttpStatus.OK,
@@ -109,7 +115,7 @@ public class DeckController implements Controller{
         catch (InvalidItemException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.FORBIDDEN,
                     ContentType.PLAIN_TEXT,
@@ -119,7 +125,7 @@ public class DeckController implements Controller{
         catch (InvalidDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.PLAIN_TEXT,
@@ -129,7 +135,7 @@ public class DeckController implements Controller{
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -187,7 +193,7 @@ public class DeckController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
 
             //Hint: Optionally can show error message to match Curl Script!!! Change Content to error message!
             return new Response(
@@ -199,7 +205,7 @@ public class DeckController implements Controller{
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -262,7 +268,7 @@ public class DeckController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.BAD_REQUEST,
                     ContentType.PLAIN_TEXT,
@@ -272,7 +278,7 @@ public class DeckController implements Controller{
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,

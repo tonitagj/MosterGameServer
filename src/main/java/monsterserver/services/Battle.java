@@ -1,4 +1,4 @@
-package monsterserver.general;
+package monsterserver.services;
 
 import monsterserver.model.Card;
 import monsterserver.model.User;
@@ -160,7 +160,7 @@ public class Battle {
         }
         else if ((int)AplayerDamage == (int)BplayerDamage)
         {
-            System.out.println("Tonitaaaa");
+
             return "draw";
         }
 

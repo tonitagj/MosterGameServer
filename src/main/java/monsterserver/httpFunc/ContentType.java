@@ -1,4 +1,4 @@
-package monsterserver.general;
+package monsterserver.httpFunc;
 
 public enum ContentType {
     PLAIN_TEXT("text/plain"),

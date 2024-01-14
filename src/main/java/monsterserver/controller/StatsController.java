@@ -1,4 +1,4 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,17 +6,19 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.DataAccessException;
 import monsterserver.exceptions.InvalidLoginDataException;
 import monsterserver.exceptions.NoDataException;
+import monsterserver.httpFunc.ContentType;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.HttpStatus;
+import monsterserver.httpFunc.Response;
 import monsterserver.model.UserStats;
-import monsterserver.repositories.ScoreboardRepository;
 import monsterserver.repositories.SessionRepository;
-import monsterserver.requests.ServerRequest;
+import monsterserver.repositories.StatsRepository;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
-import java.util.Collection;
-
-public class ScoreboardController implements Controller{
+public class StatsController implements Controller {
     ObjectMapper objectMapper;
-    public ScoreboardController(){
+    public StatsController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     public ObjectMapper getObjectMapper() {
@@ -26,32 +28,36 @@ public class ScoreboardController implements Controller{
     public void printline(){
 
     }
-
+    @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if (serverRequest.getMethod().equals("GET")){
-            return this.getScoreboard(serverRequest);
+        if (serverRequest.getMethod().equals("GET") && serverRequest.getPathParts().get(0).equals("stats") && serverRequest.getPathParts().size() == 1) {
+            return this.getStatsByUserId(serverRequest);
+        }else{
+            response = new Response(HttpStatus.BAD_REQUEST, ContentType.PLAIN_TEXT, "Bad request!");
         }
 
         return response;
     }
 
-    public Response getScoreboard(ServerRequest serverRequest) {
+
+    public Response getStatsByUserId(ServerRequest serverRequest) {
         DatabaseManager databaseManager = new DatabaseManager();
 
         try (databaseManager) {
 
             new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
-            Collection<UserStats> scoreBoard = new ScoreboardRepository(databaseManager).getScoreboard();
+            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
+            UserStats userStats = new StatsRepository(databaseManager).getStatsByUserId(userId);
 
             databaseManager.commitTransaction();
 
-            String scoreBoardJSON = this.getObjectMapper().writeValueAsString(scoreBoard);
+            String userStatsJSON = this.getObjectMapper().writeValueAsString(userStats);
 
             return  new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    scoreBoardJSON
+                    userStatsJSON
             );
         }
         catch (JsonProcessingException exception) {
@@ -74,17 +80,17 @@ public class ScoreboardController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.NO_CONTENT,
                     ContentType.PLAIN_TEXT,
-                    "No entries for Scoreboard found"
+                    "Stats not found"
             );
         }
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -101,4 +107,5 @@ public class ScoreboardController implements Controller{
             );
         }
     }
+
 }

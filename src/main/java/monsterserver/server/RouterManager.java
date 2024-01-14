@@ -1,6 +1,7 @@
 package monsterserver.server;
 
-import monsterserver.general.*;
+import monsterserver.controller.*;
+import monsterserver.httpFunc.*;
 
 public class RouterManager {
 

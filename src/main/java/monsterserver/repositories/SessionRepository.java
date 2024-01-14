@@ -5,7 +5,7 @@ import monsterserver.exceptions.DataAccessException;
 import monsterserver.exceptions.DataUpdateException;
 import monsterserver.exceptions.InvalidLoginDataException;
 import monsterserver.model.UserCredentials;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
 import java.sql.PreparedStatement;

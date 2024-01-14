@@ -19,7 +19,6 @@ public class Server {
 
                 new Thread(clientThread).start();
 
-
             }
 
 

@@ -1,20 +1,29 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import monsterserver.exceptions.*;
-import monsterserver.model.TradingDeal;
+import monsterserver.exceptions.DataAccessException;
+import monsterserver.exceptions.InvalidLoginDataException;
+import monsterserver.exceptions.NoDataException;
+import monsterserver.exceptions.NotFoundException;
+import monsterserver.httpFunc.ContentType;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.HttpStatus;
+import monsterserver.httpFunc.Response;
+import monsterserver.model.BattleLogs;
+import monsterserver.repositories.BattleLogsRepository;
 import monsterserver.repositories.SessionRepository;
-import monsterserver.repositories.TradingRepository;
-import monsterserver.requests.ServerRequest;
+import monsterserver.repositories.UserRepository;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
-import java.util.Collection;
+import java.util.List;
 
-public class TradingController implements Controller{
+public class BattleLogsController implements Controller {
+
     ObjectMapper objectMapper;
-    public TradingController(){
+    public BattleLogsController(){
         this.objectMapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
     public ObjectMapper getObjectMapper() {
@@ -28,110 +37,40 @@ public class TradingController implements Controller{
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if(serverRequest.getMethod().equals("POST")) {
-            if (serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("tradings")) {
-                return this.createTradingDeal(serverRequest);
-            } else if (serverRequest.getMethod().equals("GET") && serverRequest.getPathParts().get(0).equals("tradings")) {
-                return this.getTradingDeals(serverRequest);
-            }
+        if (serverRequest.getMethod().equals("GET") && serverRequest.getPathParts().size() > 1) {
+            return this.getDetailedBattleLog(serverRequest);
+        }else if (serverRequest.getMethod().equals("GET")){
+
+            return this.getBattleLogsFromUser(serverRequest);
         }
+
         return response;
+
     }
 
-    public Response createTradingDeal(ServerRequest serverRequest) {
+    public Response getBattleLogsFromUser(ServerRequest serverRequest) {
         DatabaseManager databaseManager = new DatabaseManager();
 
         try (databaseManager) {
 
             new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
             int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
-            TradingDeal tradingDeal = this.getObjectMapper().readValue(serverRequest.getBody(), TradingDeal.class);
+            List<BattleLogs> battleLogs = new BattleLogsRepository(databaseManager).getBattleLogs(userId);
 
-            new TradingRepository(databaseManager).createTradingDeal(tradingDeal);
-            new TradingRepository(databaseManager).updateCardForCreateTradingDeal(tradingDeal, userId);
-            databaseManager.commitTransaction();
-
-            return  new Response(
-                    HttpStatus.CREATED,
-                    ContentType.PLAIN_TEXT,
-                    "Trading deal successfully created"
-            );
-        }
-        catch (JsonProcessingException exception) {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.PLAIN_TEXT,
-                    "Internal Server Error"
-            );
-        }
-        catch (InvalidLoginDataException e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.UNAUTHORIZED,
-                    ContentType.PLAIN_TEXT,
-                    "Authentication information is missing or invalid"
-            );
-        }
-        catch (ConstraintViolationException e)
-        {
-            databaseManager.rollbackTransaction();
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.CONFLICT,
-                    ContentType.PLAIN_TEXT,
-                    "A deal with this deal ID already exists."
-            );
-        }
-        catch (InvalidItemException e)
-        {
-            databaseManager.rollbackTransaction();
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.FORBIDDEN,
-                    ContentType.PLAIN_TEXT,
-                    "The deal contains a card that is not owned by the user or locked in the deck."
-            );
-        }
-        catch (DataAccessException e)
-        {
-            databaseManager.rollbackTransaction();
-            e.printStackTrace();
-            return new Response(
-                    HttpStatus.CONFLICT,
-                    ContentType.PLAIN_TEXT,
-                    "Database Server Error"
-            );
-        }
-        catch (Exception e)
-        {
-            databaseManager.rollbackTransaction();
-            return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    ContentType.JSON,
-                    "Internal Server Error"
-            );
-        }
-    }
-
-    public Response getTradingDeals(ServerRequest serverRequest) {
-        DatabaseManager databaseManager = new DatabaseManager();
-
-        try (databaseManager) {
-
-            new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
-            int userId = new SessionRepository(databaseManager).getUserIdByToken(serverRequest);
-            Collection<TradingDeal> tradingDeals = new TradingRepository(databaseManager).getAllTradingDeals();
+            for(BattleLogs battleLog : battleLogs)
+            {
+                battleLog.setFirstPlayer(new UserRepository(databaseManager).getUsernameByUserId(battleLog.getPlayerAId()));
+                battleLog.setSecondPlayer(new UserRepository(databaseManager).getUsernameByUserId(battleLog.getPlayerBId()));
+            }
 
             databaseManager.commitTransaction();
 
-            String tradingDealsJSON = this.getObjectMapper().writeValueAsString(tradingDeals);
+            String userCardsJSON = this.getObjectMapper().writeValueAsString(battleLogs);
 
             return  new Response(
                     HttpStatus.OK,
                     ContentType.JSON,
-                    tradingDealsJSON
+                    userCardsJSON
             );
         }
         catch (JsonProcessingException exception) {
@@ -154,18 +93,81 @@ public class TradingController implements Controller{
         catch (NoDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
-                    //Mit Status 204 wird die Nachricht nicht angezeigt
-                    HttpStatus.BAD_REQUEST,
+                    HttpStatus.NOT_FOUND,
                     ContentType.PLAIN_TEXT,
-                    "The request was fine, but there are no trading deals available"
+                    "No Battle logs for user found"
             );
         }
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
+            return new Response(
+                    HttpStatus.CONFLICT,
+                    ContentType.PLAIN_TEXT,
+                    "Database Server Error"
+            );
+        }
+        catch (Exception e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.JSON,
+                    "Internal Server Error"
+            );
+        }
+    }
+
+    public Response getDetailedBattleLog(ServerRequest serverRequest) {
+        DatabaseManager databaseManager = new DatabaseManager();
+
+        try (databaseManager) {
+
+            new SessionRepository(databaseManager).checkIfTokenIsValid(serverRequest);
+
+            String battleLog = new BattleLogsRepository(databaseManager).getDetailedBattleLog(Integer.parseInt(serverRequest.getPathParts().get(1)));
+            databaseManager.commitTransaction();
+
+            return  new Response(
+                    HttpStatus.OK,
+                    ContentType.PLAIN_TEXT,
+                    battleLog
+            );
+        }
+        catch (JsonProcessingException exception) {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    ContentType.PLAIN_TEXT,
+                    "Internal Server Error"
+            );
+        }
+        catch (InvalidLoginDataException e)
+        {
+            databaseManager.rollbackTransaction();
+            return new Response(
+                    HttpStatus.UNAUTHORIZED,
+                    ContentType.PLAIN_TEXT,
+                    "Authentication information is missing or invalid"
+            );
+        }
+        catch (NotFoundException e)
+        {
+            databaseManager.rollbackTransaction();
+
+            return new Response(
+                    HttpStatus.NOT_FOUND,
+                    ContentType.PLAIN_TEXT,
+                    "No Battle log found with specific battlelog-id"
+            );
+        }
+        catch (DataAccessException e)
+        {
+            databaseManager.rollbackTransaction();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,

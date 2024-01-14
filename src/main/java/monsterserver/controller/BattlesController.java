@@ -1,15 +1,17 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.*;
+import monsterserver.httpFunc.*;
 import monsterserver.model.Card;
 import monsterserver.model.User;
 import monsterserver.model.UserStats;
 import monsterserver.repositories.*;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
+import monsterserver.services.Battle;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,8 +35,10 @@ public class BattlesController implements Controller {
     @Override
     public Response handleRequest(ServerRequest serverRequest) {
         Response response = null;
-        if (serverRequest.getMethod().equals("POST")) {
+        if (serverRequest.getMethod().equals("POST") && serverRequest.getPathParts().get(0).equals("battles") && serverRequest.getPathParts().size() == 1) {
             return this.manageBattle(serverRequest);
+        } else{
+            response = new Response(HttpStatus.BAD_REQUEST, ContentType.PLAIN_TEXT, "Bad request!");
         }
         return response;
 
@@ -116,7 +120,6 @@ public class BattlesController implements Controller {
                         secondPlayerDeck.add(deckCard);
                     } else if (winner.equals("draw")) {
                         battle.setBattleLog("=> Draw");
-                        System.out.println(battle.battleLog);
                     } else {
                         throw new NoDataException("No winner could be calculated");
                     }
@@ -126,64 +129,63 @@ public class BattlesController implements Controller {
 
 
                     //change gained cards and userstats if game result is not a draw
-                    //if (rounds < (maxRounds - 1)) {
-
-                    //change card owner in db if the new owner of the deck cards should be the winner
-                    if (!firstPlayerDeck.isEmpty()) {
-                        for (Card card : firstPlayerDeck) {
-                            new CardRepository(databaseManager).updateCardOwner(usersFromBattle.get(0).getId(), card.getCardId());
+                    if(rounds == maxRounds-1){
+                        if (!firstPlayerDeck.isEmpty()) {
+                            for (Card card : firstPlayerDeck) {
+                                new CardRepository(databaseManager).updateCardOwner(usersFromBattle.get(0).getId(), card.getCardId());
+                            }
                         }
-                    }
-                    if (!secondPlayerDeck.isEmpty()) {
-                        for (Card card : secondPlayerDeck) {
-                            new CardRepository(databaseManager).updateCardOwner(usersFromBattle.get(1).getId(), card.getCardId());
+                        if (!secondPlayerDeck.isEmpty()) {
+                            for (Card card : secondPlayerDeck) {
+                                new CardRepository(databaseManager).updateCardOwner(usersFromBattle.get(1).getId(), card.getCardId());
+                            }
                         }
-                    }
 
-                    Integer playerAoldDeckId = new DeckRepository(databaseManager).getDeckIdByUserId(usersFromBattle.get(0).getId());
-                    Integer playerBoldDeckId = new DeckRepository(databaseManager).getDeckIdByUserId(usersFromBattle.get(1).getId());
-                    new DeckRepository(databaseManager).removeOldDeck(usersFromBattle.get(0).getId());
-                    new DeckRepository(databaseManager).removeOldDeck(usersFromBattle.get(1).getId());
+                        Integer playerAoldDeckId = new DeckRepository(databaseManager).getDeckIdByUserId(usersFromBattle.get(0).getId());
+                        Integer playerBoldDeckId = new DeckRepository(databaseManager).getDeckIdByUserId(usersFromBattle.get(1).getId());
+                        new DeckRepository(databaseManager).removeOldDeck(usersFromBattle.get(0).getId());
+                        new DeckRepository(databaseManager).removeOldDeck(usersFromBattle.get(1).getId());
 
-                    if (playerAoldDeckId != null) {
-                        new DeckRepository(databaseManager).deleteOldDeck(playerAoldDeckId);
-                    }
-                    if (playerBoldDeckId != null) {
-                        new DeckRepository(databaseManager).deleteOldDeck(playerBoldDeckId);
-                    }
-                    if (winner.equals("playerA")) {
-                        System.out.println("Hit another part");
-                        UserStats firstPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(0).getId());
-                        firstPlayerUserStats.setEloWinner();
-                        firstPlayerUserStats.increaseWins();
+                        if (playerAoldDeckId != null) {
+                            new DeckRepository(databaseManager).deleteOldDeck(playerAoldDeckId);
+                        }
+                        if (playerBoldDeckId != null) {
+                            new DeckRepository(databaseManager).deleteOldDeck(playerBoldDeckId);
+                        }
+                        if (winner.equals("playerA")) {
 
-                        new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(0).getId(), firstPlayerUserStats);
+                            UserStats firstPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(0).getId());
+                            firstPlayerUserStats.setEloWinner();
+                            firstPlayerUserStats.increaseWins();
 
-                        UserStats secondPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(1).getId());
-                        secondPlayerUserStats.setEloLooser();
-                        secondPlayerUserStats.increaseLooses();
-                        new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(1).getId(), secondPlayerUserStats);
+                            new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(0).getId(), firstPlayerUserStats);
 
-                        battle.setBattleLog("\n=> " + usersFromBattle.get(0).getUsername() + " wins");
-                    } else if (winner.equals("playerB")) {
-                        System.out.println("Hit one part");
-                        UserStats secondPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(1).getId());
-                        secondPlayerUserStats.setEloWinner();
-                        secondPlayerUserStats.increaseWins();
-                        new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(1).getId(), secondPlayerUserStats);
+                            UserStats secondPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(1).getId());
+                            secondPlayerUserStats.setEloLooser();
+                            secondPlayerUserStats.increaseLooses();
+                            new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(1).getId(), secondPlayerUserStats);
 
-                        UserStats firstPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(0).getId());
-                        firstPlayerUserStats.setEloLooser();
-                        firstPlayerUserStats.increaseLooses();
-                        new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(0).getId(), firstPlayerUserStats);
+                            battle.setBattleLog("\n=> " + usersFromBattle.get(0).getUsername() + " wins");
+                        } else if (winner.equals("playerB")) {
+                            UserStats secondPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(1).getId());
+                            secondPlayerUserStats.setEloWinner();
+                            secondPlayerUserStats.increaseWins();
+                            new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(1).getId(), secondPlayerUserStats);
 
-                        battle.setBattleLog("\n=> " + usersFromBattle.get(1).getUsername() + " wins");
-                    }
+                            UserStats firstPlayerUserStats = new StatsRepository(databaseManager).getStatsByUserId(usersFromBattle.get(0).getId());
+                            firstPlayerUserStats.setEloLooser();
+                            firstPlayerUserStats.increaseLooses();
+                            new StatsRepository(databaseManager).updateStatsByUserId(usersFromBattle.get(0).getId(), firstPlayerUserStats);
 
-                    if(rounds == maxRounds){
+                            battle.setBattleLog("\n=> " + usersFromBattle.get(1).getUsername() + " wins");
+                        }else {
+                            battle.setBattleLog("=> Draw");
+                        }
+
                         battle.setBattleLog("=> END!");
+
                     }
-                    //}
+
                 }
 
                 battleLog = battle.getBattleLog();
@@ -215,7 +217,7 @@ public class BattlesController implements Controller {
             );
         } catch (NotFoundException e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.NO_CONTENT,
                     ContentType.PLAIN_TEXT,
@@ -223,7 +225,7 @@ public class BattlesController implements Controller {
             );
         } catch (NoDataException e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.NO_CONTENT,
                     ContentType.PLAIN_TEXT,
@@ -238,7 +240,7 @@ public class BattlesController implements Controller {
             );
         } catch (DataAccessException e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,

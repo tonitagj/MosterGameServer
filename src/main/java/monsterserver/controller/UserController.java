@@ -1,14 +1,18 @@
-package monsterserver.general;
+package monsterserver.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import monsterserver.exceptions.*;
+import monsterserver.httpFunc.ContentType;
+import monsterserver.httpFunc.Controller;
+import monsterserver.httpFunc.HttpStatus;
+import monsterserver.httpFunc.Response;
 import monsterserver.model.UserCredentials;
 import monsterserver.model.UserData;
 import monsterserver.repositories.SessionRepository;
 import monsterserver.repositories.UserRepository;
-import monsterserver.requests.ServerRequest;
+import monsterserver.httpFunc.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
 public class UserController implements Controller {
@@ -31,22 +35,23 @@ public class UserController implements Controller {
         Response response = null;
         if(serverRequest.getMethod().equals("POST")){
             //user
-            if(serverRequest.getPathParts().get(0).equals("users")) {
+            if(serverRequest.getPathParts().get(0).equals("users") && serverRequest.getPathParts().size() == 1) {
                     return this.addUser(serverRequest);
                 //session
-            } else if(serverRequest.getPathParts().get(0).equals("sessions")){
+            } else if(serverRequest.getPathParts().get(0).equals("sessions") && serverRequest.getPathParts().size() == 1){
                 return this.loginUser(serverRequest);
             }
         } else if (serverRequest.getMethod().equals("GET")) {
-            if(serverRequest.getPathParts().get(0).equals("users") && !serverRequest.getPathParts().get(1).isEmpty()){
+            if(serverRequest.getPathParts().get(0).equals("users") && !serverRequest.getPathParts().get(1).isEmpty() && serverRequest.getPathParts().size() == 2){
                 return this.getUserDataByUsername(serverRequest);
             }
-
         }else if (serverRequest.getMethod().equals("PUT")){
-            if(serverRequest.getPathParts().get(0).equals("users") && !serverRequest.getPathParts().get(1).isEmpty()){
+            if(serverRequest.getPathParts().get(0).equals("users") && !serverRequest.getPathParts().get(1).isEmpty() && serverRequest.getPathParts().size() == 2){
                 return this.updateUser(serverRequest);
             }
         }
+
+        response = new Response(HttpStatus.BAD_REQUEST, ContentType.PLAIN_TEXT, "Bad request!");
         return response;
     }
 
@@ -73,7 +78,7 @@ public class UserController implements Controller {
         } catch (ConstraintViolationException exception) {
             databaseManager.rollbackTransaction();
             return new Response(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
                     "User already exists"
             );
@@ -135,7 +140,7 @@ public class UserController implements Controller {
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -171,7 +176,7 @@ public class UserController implements Controller {
             );
         } catch (JsonProcessingException e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.PLAIN_TEXT,
@@ -186,7 +191,7 @@ public class UserController implements Controller {
             );
         } catch (InvalidLoginDataException e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.UNAUTHORIZED,
                     ContentType.PLAIN_TEXT,
@@ -194,7 +199,7 @@ public class UserController implements Controller {
             );
         } catch (DataAccessException e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -202,7 +207,7 @@ public class UserController implements Controller {
             );
         } catch (Exception e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.PLAIN_TEXT,
@@ -229,7 +234,7 @@ public class UserController implements Controller {
         }
         catch (JsonProcessingException e) {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.PLAIN_TEXT,
@@ -248,7 +253,7 @@ public class UserController implements Controller {
         catch (InvalidLoginDataException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.UNAUTHORIZED,
                     ContentType.PLAIN_TEXT,
@@ -258,7 +263,7 @@ public class UserController implements Controller {
         catch (DataAccessException e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.CONFLICT,
                     ContentType.PLAIN_TEXT,
@@ -268,7 +273,7 @@ public class UserController implements Controller {
         catch (Exception e)
         {
             databaseManager.rollbackTransaction();
-            e.printStackTrace();
+
             return new Response(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     ContentType.PLAIN_TEXT,
@@ -276,4 +281,6 @@ public class UserController implements Controller {
             );
         }
     }
+
+
 }

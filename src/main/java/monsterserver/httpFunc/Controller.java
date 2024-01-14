@@ -1,6 +1,4 @@
-package monsterserver.general;
-
-import monsterserver.requests.ServerRequest;
+package monsterserver.httpFunc;
 
 public interface Controller {
     public Response handleRequest(ServerRequest serverRequest);

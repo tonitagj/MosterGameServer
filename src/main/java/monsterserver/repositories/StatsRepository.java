@@ -3,9 +3,7 @@ package monsterserver.repositories;
 import monsterserver.exceptions.DataAccessException;
 import monsterserver.exceptions.DataUpdateException;
 import monsterserver.exceptions.NoDataException;
-import monsterserver.general.Response;
 import monsterserver.model.UserStats;
-import monsterserver.requests.ServerRequest;
 import monsterserver.server.DatabaseManager;
 
 import java.sql.PreparedStatement;

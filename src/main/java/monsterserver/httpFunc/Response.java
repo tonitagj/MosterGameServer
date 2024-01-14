@@ -1,8 +1,4 @@
-package monsterserver.general;
-
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+package monsterserver.httpFunc;
 
 public class Response {
     private int status;
